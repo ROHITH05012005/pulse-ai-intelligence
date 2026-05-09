@@ -28,7 +28,7 @@ function App() {
 
     setLoading(true);
     try {
-      const response = await axios.post('/classify', { text: val });
+      const response = await axios.post('http://localhost:8000/classify', { text: val });
       setResults(response.data.classifications);
       setActiveEmotion(response.data.top_emotion);
     } catch (err) {
