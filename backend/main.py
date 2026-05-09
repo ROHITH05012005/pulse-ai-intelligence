@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import requests
+import uvicorn
 import os
 
 # Hugging Face Inference API Config
