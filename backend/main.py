@@ -2,20 +2,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from transformers import pipeline
-import uvicorn
+import requests
 import os
 
-app = FastAPI(title="Pulse AI: Emotion Classifier")
+# Hugging Face Inference API Config
+API_URL = "https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base"
+headers = {}
 
-# Initialize the Emotion Classification Pipeline
-print("Loading emotion classification model...")
-classifier = pipeline(
-    "text-classification", 
-    model="j-hartmann/emotion-english-distilroberta-base", 
-    top_k=None
-)
-print("Model loaded successfully!")
+app = FastAPI(title="Pulse AI: Emotion Classifier")
 
 class TextRequest(BaseModel):
     text: str
@@ -30,13 +24,18 @@ async def classify_text(request: TextRequest):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     
     try:
-        # Perform classification
-        # For top_k=None, results is a list of lists of dictionaries
-        results = classifier(request.text)
-        print(f"DEBUG: Classifier output: {results}")
+        # Call Hugging Face Inference API instead of local model
+        response = requests.post(API_URL, headers=headers, json={"inputs": request.text})
+        results = response.json()
         
-        # results[0] is the list of all emotions for the first (and only) text input
-        formatted_results = sorted(results[0], key=lambda x: x['score'], reverse=True)
+        print(f"DEBUG: API output: {results}")
+        
+        # Format results (The API returns a list of dictionaries)
+        # Handle cases where the API returns a list of lists
+        if isinstance(results[0], list):
+            formatted_results = sorted(results[0], key=lambda x: x['score'], reverse=True)
+        else:
+            formatted_results = sorted(results, key=lambda x: x['score'], reverse=True)
         
         return {
             "text": request.text,
@@ -45,9 +44,7 @@ async def classify_text(request: TextRequest):
         }
     except Exception as e:
         print(f"ERROR during classification: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="The AI Brain is taking a nap. Please try again in a moment!")
 
 # --- PRODUCTION STATIC FILE SERVING ---
 # Mount the built frontend files
