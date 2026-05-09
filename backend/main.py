@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-import requests
+import httpx
 import uvicorn
 import os
 
@@ -21,9 +21,15 @@ async def classify_text(request: TextRequest):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     
     try:
-        # Call Hugging Face Inference API
-        response = requests.post(API_URL, headers=headers, json={"inputs": request.text})
-        results = response.json()
+        # Call Hugging Face Inference API with a timeout
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                API_URL, 
+                headers=headers, 
+                json={"inputs": request.text},
+                timeout=15.0
+            )
+            results = response.json()
         
         print(f"DEBUG: API output: {results}")
 
@@ -52,7 +58,7 @@ async def classify_text(request: TextRequest):
                 "status": "success"
             }
         else:
-            raise Exception("Invalid response format from AI")
+            raise Exception("The AI is thinking too hard. Try a shorter sentence!")
 
     except Exception as e:
         print(f"ERROR during classification: {str(e)}")
@@ -61,7 +67,7 @@ async def classify_text(request: TextRequest):
             "classifications": [],
             "top_emotion": "neutral",
             "status": "error",
-            "message": str(e)
+            "message": "AI Brain is busy. Try clicking 'Analyze Now' again!"
         }
 
 # --- PRODUCTION STATIC FILE SERVING ---
