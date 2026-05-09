@@ -15,10 +15,6 @@ app = FastAPI(title="Pulse AI: Emotion Classifier")
 class TextRequest(BaseModel):
     text: str
 
-@app.get("/")
-def read_root():
-    return {"message": "Pulse AI Backend is running!"}
-
 @app.post("/classify")
 async def classify_text(request: TextRequest):
     if not request.text.strip():
