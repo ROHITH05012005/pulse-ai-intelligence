@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pulse-ai-engine
+    env: docker
+    plan: free
+    region: ohio
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: MODEL_NAME
+        value: j-hartmann/emotion-english-distilroberta-base
+    healthCheckPath: /
