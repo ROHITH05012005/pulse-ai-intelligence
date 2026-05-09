@@ -112,7 +112,7 @@ function App() {
         </div>
 
         <AnimatePresence>
-          {results && (
+          {results && results.length > 0 && (
             <motion.div 
               className="results-container"
               initial={{ opacity: 0, height: 0 }}
@@ -135,6 +135,12 @@ function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {results && results.length === 0 && !loading && (
+          <div style={{ textAlign: 'center', marginTop: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+             <p style={{ color: 'var(--active-color)' }}>The AI Brain is still waking up... please wait 10 seconds and try again!</p>
+          </div>
+        )}
 
         {!results && !loading && (
           <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
