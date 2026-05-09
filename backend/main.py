@@ -8,15 +8,6 @@ import os
 
 app = FastAPI(title="Pulse AI: Emotion Classifier")
 
-# Enable CORS for React frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Initialize the Emotion Classification Pipeline
 print("Loading emotion classification model...")
 classifier = pipeline(
