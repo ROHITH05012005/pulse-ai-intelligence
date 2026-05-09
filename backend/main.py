@@ -21,27 +21,48 @@ async def classify_text(request: TextRequest):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     
     try:
-        # Call Hugging Face Inference API instead of local model
+        # Call Hugging Face Inference API
         response = requests.post(API_URL, headers=headers, json={"inputs": request.text})
         results = response.json()
         
         print(f"DEBUG: API output: {results}")
+
+        # Handle "Model is loading" state from Hugging Face
+        if isinstance(results, dict) and "error" in results:
+            error_msg = results.get("error", "Unknown error")
+            if "loading" in error_msg.lower():
+                return {
+                    "text": request.text,
+                    "classifications": [],
+                    "top_emotion": "neutral",
+                    "status": "loading",
+                    "message": "AI Brain is waking up... try again in 10 seconds!"
+                }
+            raise Exception(error_msg)
         
-        # Format results (The API returns a list of dictionaries)
-        # Handle cases where the API returns a list of lists
-        if isinstance(results[0], list):
-            formatted_results = sorted(results[0], key=lambda x: x['score'], reverse=True)
+        # Format results (The API returns a list of dictionaries or a list of lists)
+        if isinstance(results, list) and len(results) > 0:
+            data = results[0] if isinstance(results[0], list) else results
+            formatted_results = sorted(data, key=lambda x: x['score'], reverse=True)
+            
+            return {
+                "text": request.text,
+                "classifications": formatted_results,
+                "top_emotion": formatted_results[0]['label'],
+                "status": "success"
+            }
         else:
-            formatted_results = sorted(results, key=lambda x: x['score'], reverse=True)
-        
-        return {
-            "text": request.text,
-            "classifications": formatted_results,
-            "top_emotion": formatted_results[0]['label']
-        }
+            raise Exception("Invalid response format from AI")
+
     except Exception as e:
         print(f"ERROR during classification: {str(e)}")
-        raise HTTPException(status_code=500, detail="The AI Brain is taking a nap. Please try again in a moment!")
+        return {
+            "text": request.text,
+            "classifications": [],
+            "top_emotion": "neutral",
+            "status": "error",
+            "message": str(e)
+        }
 
 # --- PRODUCTION STATIC FILE SERVING ---
 # Mount the built frontend files
