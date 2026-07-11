@@ -151,7 +151,7 @@ function App() {
       </motion.div>
 
       <footer style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-        Built with Google Deepmind Stack • NLP Classifier v1.0
+        Built by <strong>FUERA</strong> • Built with Google Deepmind Stack
       </footer>
     </div>
   );
