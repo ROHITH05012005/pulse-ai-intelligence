@@ -151,7 +151,7 @@ function App() {
       </motion.div>
 
       <footer style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-        Built by <strong>FUERA</strong> • Built with Google Deepmind Stack
+        Built by <a href="https://www.fuera.in.net/" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline" }}><strong>FUERA</strong></a> • Built with Google Deepmind Stack
       </footer>
     </div>
   );
