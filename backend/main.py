@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
@@ -25,9 +26,13 @@ headers = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
 class TextRequest(BaseModel):
     text: str
 
-@app.get("/")
-def read_root():
-    return {"message": "Pulse AI Backend is running with HF API!"}
+# Mount static files (React frontend) if they exist
+if os.path.exists("static"):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+else:
+    @app.get("/")
+    def read_root():
+        return {"message": "Pulse AI Backend is running with HF API!"}
 
 @app.post("/classify")
 async def classify_text(request: TextRequest):
